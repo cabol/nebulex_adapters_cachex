@@ -36,4 +36,4 @@ erl_crash.dump
 .vs*
 /priv
 .sobelow*
-mix.lock
+/nebulex

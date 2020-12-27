@@ -52,6 +52,7 @@ defmodule NebulexCachexAdapter.MixProject do
       {:credo, "~> 1.5", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.0", only: [:dev, :test], runtime: false},
       {:sobelow, "~> 0.10", only: [:dev, :test], runtime: false},
+      {:stream_data, "~> 0.5", only: [:dev, :test]},
 
       # Benchmark Test
       {:benchee, "~> 1.0", only: :test},
@@ -63,12 +64,8 @@ defmodule NebulexCachexAdapter.MixProject do
   end
 
   defp nebulex_dep do
-    if System.get_env("NBX_TEST") do
-      # This is because the adapter tests need some support modules and shared
-      # tests from nebulex dependency, and the hex dependency doesn't include
-      # the test folder. Hence, to run the tests it is necessary to fetch
-      # nebulex dependency directly from GH.
-      {:nebulex, github: "cabol/nebulex", branch: "master"}
+    if path = System.get_env("NEBULEX_PATH") do
+      {:nebulex, "~> 2.0.0-rc.1", path: path}
     else
       {:nebulex, "~> 2.0.0-rc.1"}
     end

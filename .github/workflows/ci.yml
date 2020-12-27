@@ -16,6 +16,9 @@ jobs:
     strategy:
       matrix:
         include:
+          - elixir: 1.11.x
+            otp: 23.x
+            coverage: true
           - elixir: 1.10.x
             otp: 23.x
           - elixir: 1.10.x
@@ -26,17 +29,19 @@ jobs:
     env:
       GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
       MIX_ENV: test
-      NBX_TEST: true
+      NEBULEX_PATH: nebulex
 
     steps:
       - uses: actions/checkout@v2
 
-      - uses: actions/setup-elixir@v1
+      - name: Install OTP and Elixir
+        uses: actions/setup-elixir@v1
         with:
           otp-version: '${{ matrix.otp }}'
           elixir-version: '${{ matrix.elixir }}'
 
-      - uses: actions/cache@v1
+      - name: Cache deps
+        uses: actions/cache@v1
         with:
           path: deps
           key: >-
@@ -45,7 +50,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-mix-
 
-      - uses: actions/cache@v1
+      - name: Cache _build
+        uses: actions/cache@v1
         with:
           path: _build
           key: >-
@@ -59,6 +65,7 @@ jobs:
           mix local.hex --force
           mix local.rebar --force
           mix deps.get
+          git clone --depth 1 --branch master https://github.com/cabol/nebulex.git
 
       - name: Run style and code consistency checks
         run: |
@@ -69,9 +76,17 @@ jobs:
       - name: Run tests
         run: |
           epmd -daemon
-          mix coveralls.github
+          mix test --trace
+        if: ${{!matrix.coverage}}
 
-      - uses: actions/cache@v1
+      - name: Run tests with coverage
+        run: |
+          epmd -daemon
+          mix coveralls.github
+        if: ${{matrix.coverage}}
+
+      - name: Cache PLT
+        uses: actions/cache@v1
         with:
           path: priv/plts
           key: '${{ runner.os }}-${{ matrix.otp }}-${{ matrix.elixir }}-plt-v1'
