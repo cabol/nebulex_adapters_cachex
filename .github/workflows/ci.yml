@@ -10,7 +10,7 @@ on:
 
 jobs:
   nebulex_test:
-    name: 'NebulexCachexAdapter Test (Elixir ${{ matrix.elixir }} OTP ${{ matrix.otp }})'
+    name: 'Nebulex.Adapters.Cachex Test (Elixir ${{ matrix.elixir }} OTP ${{ matrix.otp }})'
     runs-on: ubuntu-latest
 
     strategy:

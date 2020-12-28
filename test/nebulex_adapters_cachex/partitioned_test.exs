@@ -1,8 +1,8 @@
-defmodule NebulexCachexAdapter.PartitionedTest do
+defmodule NebulexAdaptersCachex.PartitionedTest do
   use Nebulex.NodeCase
-  use NebulexCachexAdapter.CacheTest
+  use Nebulex.Adapters.CachexTest
 
-  alias NebulexCachexAdapter.TestCache.Partitioned
+  alias NebulexAdaptersCachex.TestCache.Partitioned
 
   @primary :"primary@127.0.0.1"
 
@@ -10,7 +10,7 @@ defmodule NebulexCachexAdapter.PartitionedTest do
     cluster =
       :lists.usort([
         @primary
-        | Application.get_env(:nebulex_cachex_adapter, :nodes, [])
+        | Application.get_env(:nebulex_adapters_cachex, :nodes, [])
       ])
 
     node_pid_list =

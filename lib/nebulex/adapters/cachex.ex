@@ -1,4 +1,4 @@
-defmodule NebulexCachexAdapter do
+defmodule Nebulex.Adapters.Cachex do
   @moduledoc """
   Nebulex adapter for Cachex.
   """

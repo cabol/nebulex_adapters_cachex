@@ -1,4 +1,4 @@
-defmodule NebulexCachexAdapter.QueryableTest do
+defmodule Nebulex.Adapters.Cachex.QueryableTest do
   import Nebulex.CacheCase
 
   deftests "queryable" do

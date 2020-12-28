@@ -1,8 +1,8 @@
-defmodule NebulexCachexAdapter.ReplicatedTest do
+defmodule NebulexAdaptersCachex.ReplicatedTest do
   use Nebulex.NodeCase
-  use NebulexCachexAdapter.CacheTest
+  use Nebulex.Adapters.CachexTest
 
-  alias NebulexCachexAdapter.TestCache.Replicated
+  alias NebulexAdaptersCachex.TestCache.Replicated
 
   setup do
     node_pid_list = start_caches([node() | Node.list()], [{Replicated, []}])

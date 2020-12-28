@@ -1,20 +1,17 @@
-defmodule NebulexCachexAdapter.MixProject do
+defmodule NebulexAdaptersCachex.MixProject do
   use Mix.Project
 
-  @version "0.1.0"
+  @version "1.0.0-dev"
+  @source_url "https://github.com/cabol/nebulex_adapters_cachex"
 
   def project do
     [
-      app: :nebulex_cachex_adapter,
+      app: :nebulex_adapters_cachex,
       version: @version,
       elixir: "~> 1.9",
       elixirc_paths: elixirc_paths(Mix.env()),
       aliases: aliases(),
       deps: deps(),
-
-      # Docs
-      name: "NebulexCachexAdapter",
-      docs: docs(),
 
       # Testing
       test_coverage: [tool: ExCoveralls],
@@ -31,7 +28,14 @@ defmodule NebulexCachexAdapter.MixProject do
 
       # Hex
       package: package(),
-      description: "Nebulex adapter for Cachex"
+      description: "Nebulex adapter for Cachex",
+
+      # Docs
+      docs: [
+        main: "Nebulex.Adapters.Cachex",
+        source_ref: "v#{@version}",
+        source_url: @source_url
+      ]
     ]
   end
 
@@ -86,19 +90,10 @@ defmodule NebulexCachexAdapter.MixProject do
 
   defp package do
     [
-      name: :nebulex_cachex_adapter,
+      name: :nebulex_adapters_cachex,
       maintainers: ["Carlos Bolanos"],
       licenses: ["MIT"],
-      links: %{"GitHub" => "https://github.com/cabol/nebulex_cachex_adapter"}
-    ]
-  end
-
-  defp docs do
-    [
-      main: "NebulexCachexAdapter",
-      source_ref: "v#{@version}",
-      canonical: "http://hexdocs.pm/nebulex_cachex_adapter",
-      source_url: "https://github.com/cabol/nebulex_cachex_adapter"
+      links: %{"GitHub" => @source_url}
     ]
   end
 

@@ -1,4 +1,4 @@
-defmodule NebulexCachexAdapter.CacheTest do
+defmodule Nebulex.Adapters.CachexTest do
   @moduledoc """
   Shared Tests
   """
@@ -7,7 +7,7 @@ defmodule NebulexCachexAdapter.CacheTest do
     quote do
       use Nebulex.Cache.EntryTest
       use Nebulex.Cache.EntryExpirationTest
-      use NebulexCachexAdapter.QueryableTest
+      use Nebulex.Adapters.Cachex.QueryableTest
     end
   end
 end
