@@ -7,7 +7,10 @@ defmodule Nebulex.Adapters.CachexTest do
     quote do
       use Nebulex.Cache.EntryTest
       use Nebulex.Cache.EntryExpirationTest
+      use Nebulex.Cache.TransactionTest
+      use Nebulex.Cache.PersistenceTest
       use Nebulex.Adapters.Cachex.QueryableTest
+      use Nebulex.Adapters.Cachex.PersistenceErrorTest
     end
   end
 end

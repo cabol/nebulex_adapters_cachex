@@ -6,10 +6,15 @@ defmodule Nebulex.Adapters.Cachex do
   # Provide Cache Implementation
   @behaviour Nebulex.Adapter
   @behaviour Nebulex.Adapter.Queryable
+  @behaviour Nebulex.Adapter.Persistence
+
+  # Inherit default transaction implementation
+  use Nebulex.Adapter.Transaction
 
   import Nebulex.Helpers
 
   alias Cachex.Query
+  alias Nebulex.Entry
 
   @compile {:inline, to_ttl: 1}
 
@@ -178,10 +183,47 @@ defmodule Nebulex.Adapters.Cachex do
   end
 
   def stream(%{name: name}, query, opts) do
-    Cachex.stream!(name, query, batch_size: opts[:page_size] || 100)
+    query = maybe_return_entry(query, opts[:return])
+    Cachex.stream!(name, query, batch_size: opts[:page_size] || 20)
   rescue
     e in Cachex.ExecutionError ->
       reraise Nebulex.QueryError, [message: e.message, query: query], __STACKTRACE__
+  end
+
+  defp maybe_return_entry([{pattern, conds, _ret}], :key) do
+    [{pattern, conds, [:"$1"]}]
+  end
+
+  defp maybe_return_entry([{pattern, conds, _ret}], :value) do
+    [{pattern, conds, [:"$4"]}]
+  end
+
+  defp maybe_return_entry([{pattern, conds, _ret}], {:key, :value}) do
+    [{pattern, conds, [{{:"$1", :"$4"}}]}]
+  end
+
+  defp maybe_return_entry([{pattern, conds, _ret}], :entry) do
+    [{pattern, conds, [%Entry{key: :"$1", value: :"$4", touched: :"$2", ttl: :"$3"}]}]
+  end
+
+  defp maybe_return_entry(query, _return), do: query
+
+  ## Persistence
+
+  @impl true
+  def dump(%{name: name}, path, opts) do
+    case Cachex.dump(name, path, opts) do
+      {:ok, true} -> :ok
+      {:error, _} = error -> error
+    end
+  end
+
+  @impl true
+  def load(%{name: name}, path, opts) do
+    case Cachex.load(name, path, opts) do
+      {:ok, true} -> :ok
+      {:error, _} = error -> error
+    end
   end
 
   ## Private Functions

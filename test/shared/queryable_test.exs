@@ -1,49 +1,84 @@
 defmodule Nebulex.Adapters.Cachex.QueryableTest do
   import Nebulex.CacheCase
 
-  deftests "queryable" do
+  deftests do
     import Nebulex.CacheHelpers
 
     alias Cachex.Query
 
-    test "all", %{cache: cache} do
-      set1 = cache_put(cache, 1..50)
-      set2 = cache_put(cache, 51..100)
+    describe "all" do
+      test "returns all keys in cache", %{cache: cache} do
+        set1 = cache_put(cache, 1..50)
+        set2 = cache_put(cache, 51..100)
 
-      for x <- 1..100, do: assert(cache.get(x) == x)
-      expected = set1 ++ set2
+        for x <- 1..100, do: assert(cache.get(x) == x)
+        expected = set1 ++ set2
 
-      assert :lists.usort(cache.all()) == expected
+        assert :lists.usort(cache.all()) == expected
 
-      set3 = Enum.to_list(20..60)
-      :ok = Enum.each(set3, &cache.delete(&1))
-      expected = :lists.usort(expected -- set3)
+        set3 = Enum.to_list(20..60)
+        :ok = Enum.each(set3, &cache.delete(&1))
+        expected = :lists.usort(expected -- set3)
 
-      assert :lists.usort(cache.all()) == expected
+        assert :lists.usort(cache.all()) == expected
+      end
     end
 
-    test "stream", %{cache: cache} do
-      entries = for x <- 1..10, into: %{}, do: {x, x * 2}
-      assert cache.put_all(entries) == :ok
+    describe "stream" do
+      @entries for x <- 1..10, into: %{}, do: {x, x * 2}
 
-      expected = Map.keys(entries)
+      test "returns all keys in cache", %{cache: cache} do
+        :ok = cache.put_all(@entries)
 
-      assert true
-             |> Query.create(:key)
-             |> cache.stream()
-             |> Enum.to_list()
-             |> :lists.usort() == expected
+        assert nil
+               |> cache.stream()
+               |> Enum.to_list()
+               |> :lists.usort() == Map.keys(@entries)
+      end
 
-      assert true
-             |> Query.create(:key)
-             |> cache.stream(page_size: 3)
-             |> Enum.to_list()
-             |> :lists.usort() == expected
+      test "returns all values in cache", %{cache: cache} do
+        :ok = cache.put_all(@entries)
 
-      assert_raise Nebulex.QueryError, fn ->
-        :invalid_query
-        |> cache.stream()
-        |> Enum.to_list()
+        assert true
+               |> Query.create(:key)
+               |> cache.stream(return: :value, page_size: 3)
+               |> Enum.to_list()
+               |> :lists.usort() == Map.values(@entries)
+      end
+
+      test "returns all key/value pairs in cache", %{cache: cache} do
+        :ok = cache.put_all(@entries)
+
+        assert true
+               |> Query.create(:key)
+               |> cache.stream(return: {:key, :value}, page_size: 3)
+               |> Enum.to_list()
+               |> :lists.usort() == :maps.to_list(@entries)
+      end
+
+      test "returns what is dictated by the built query", %{cache: cache} do
+        :ok = cache.put_all(@entries)
+
+        expected =
+          :lists.zip3(
+            Map.keys(@entries),
+            Map.values(@entries),
+            List.duplicate(nil, map_size(@entries))
+          )
+
+        assert true
+               |> Query.create({:key, :value, :ttl})
+               |> cache.stream(page_size: 3)
+               |> Enum.to_list()
+               |> :lists.usort() == expected
+      end
+
+      test "raises when query is invalid", %{cache: cache} do
+        assert_raise Nebulex.QueryError, fn ->
+          :invalid_query
+          |> cache.stream()
+          |> Enum.to_list()
+        end
       end
     end
   end
