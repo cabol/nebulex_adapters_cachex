@@ -9,7 +9,13 @@
 [![Hex Version](https://img.shields.io/hexpm/v/nebulex_adapters_cachex.svg)](https://hex.pm/packages/nebulex_adapters_cachex)
 [![Docs](https://img.shields.io/badge/docs-hexpm-blue.svg)](https://hexdocs.pm/nebulex_adapters_cachex)
 
-See the [docs](https://hexdocs.pm/nebulex_adapters_cachex/)
+This adapter allows to use Cachex (a widely used and powerful cache in Elixir)
+via Nebulex, which means, you can use Nebulex as usual taking advantage of all
+its benefits (like the cache abstraction layer, distributed caching topologies,
+declarative caching annotations, and so on), and at the same time using Cachex
+as cache backend.
+
+See the [online documentation](https://hexdocs.pm/nebulex_adapters_cachex/)
 for more information.
 
 ## Installation
@@ -19,7 +25,7 @@ Add `:nebulex_adapters_cachex` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:nebulex_adapters_cachex, "~> 0.1.0"}
+    {:nebulex_adapters_cachex, "~> 1.0"}
   ]
 end
 ```
@@ -103,7 +109,8 @@ defp cachex_opts do
 end
 ```
 
-> See [Cachex.start_link/1][cachex_start_link] for more information.
+> See [Cachex.start_link/1][cachex_start_link] for more information
+  about options.
 
 [cachex_start_link]: https://hexdocs.pm/cachex/Cachex.html#start_link/1
 
@@ -158,3 +165,76 @@ Redis; for all examples you can just replace `Nebulex.Adapters.Local` by
 `Nebulex.Adapters.Cachex`.
 
 [nbx_redis_adapter]: https://github.com/cabol/nebulex_redis_adapter
+
+## Testing
+
+Since `Nebulex.Adapters.Cachex` uses the support modules and shared tests
+from `Nebulex` and by default its test folder is not included in the Hex
+dependency, the following steps are required for running the tests.
+
+First of all, make sure you set the environment variable `NEBULEX_PATH`
+to `nebulex`:
+
+```
+export NEBULEX_PATH=nebulex
+```
+
+Second, make sure you fetch `:nebulex` dependency directly from GtiHub
+by running:
+
+```
+mix nbx.setup
+```
+
+Third, fetch deps:
+
+```
+mix deps.get
+```
+
+Finally, you can run the tests:
+
+```
+mix test
+```
+
+Running tests with coverage:
+
+```
+mix coveralls.html
+```
+
+You will find the coverage report within `cover/excoveralls.html`.
+
+## Benchmarks
+
+Benchmarks were added using [benchee](https://github.com/PragTob/benchee), and
+they are located within the directory [benchmarks](./benchmarks).
+
+To run the benchmarks:
+
+```
+MIX_ENV=test mix run benchmarks/benchmark.exs
+```
+
+## Contributing
+
+Contributions to Nebulex are very welcome and appreciated!
+
+Use the [issue tracker](https://github.com/cabol/nebulex_adapters_cachex/issues)
+for bug reports or feature requests. Open a
+[pull request](https://github.com/cabol/nebulex_adapters_cachex/pulls)
+when you are ready to contribute.
+
+When submitting a pull request you should not update the
+[CHANGELOG.md](CHANGELOG.md), and also make sure you test your changes
+thoroughly, include unit tests alongside new or changed code.
+
+Before to submit a PR it is highly recommended to run `mix check` and ensure
+all checks run successfully.
+
+## Copyright and License
+
+Copyright (c) 2020, Carlos Bolaños.
+
+Nebulex.Adapters.Cachex source code is licensed under the [MIT License](LICENSE).

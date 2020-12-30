@@ -64,8 +64,8 @@ jobs:
         run: |
           mix local.hex --force
           mix local.rebar --force
+          mix nbx.setup
           mix deps.get
-          git clone --depth 1 --branch master https://github.com/cabol/nebulex.git
 
       - name: Run style and code consistency checks
         run: |

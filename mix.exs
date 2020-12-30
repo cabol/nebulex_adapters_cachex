@@ -77,6 +77,9 @@ defmodule NebulexAdaptersCachex.MixProject do
 
   defp aliases do
     [
+      "nbx.setup": [
+        "cmd git clone --depth 1 --branch master https://github.com/cabol/nebulex.git"
+      ],
       check: [
         "compile --warnings-as-errors",
         "format --check-formatted",

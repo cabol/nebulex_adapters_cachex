@@ -1,15 +1,14 @@
 defmodule Nebulex.Adapters.Cachex do
   @moduledoc """
-  Nebulex adapter for Cachex.
+  Nebulex adapter for [Cachex][Cachex].
 
-  Cachex is one of the most used cache (maybe the most used one) in Elixir.
-  For that reason, Nebulex provides this adapter to use Cachex via Nebulex
-  taking advantage of all their benefits and/or features.
+  [Cachex]: http://hexdocs.pm/cachex/Cachex.html
 
-  Cachex is now a very good alternative for local caching aside from the
-  built-in local adapter provided by Nebulex. Besides, you can setup distributed
-  topologies by using the distributed adapters Nebulex brings with it and set up
-  Cachex as local cache.
+  This adapter allows to use Cachex (a widely used and powerful cache in Elixir)
+  via Nebulex, which means, you can use Nebulex as usual taking advantage of all
+  its benefits (e.g.: cache abstraction layer, distributed caching topologies,
+  declarative caching annotations, and so on), and at the same time using Cachex
+  as cache backend.
 
   ## Options
 
