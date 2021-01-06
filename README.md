@@ -1,19 +1,13 @@
 # Nebulex.Adapters.Cachex
-> ### Nebulex adapter for [Cachex][Cachex]
-> Cachex via Nebulex out-of-box.
+> A [Nebulex][Nebulex] adapter for [Cachex][Cachex].
 
+[Nebulex]: https://github.com/cabol/nebulex
 [Cachex]: https://github.com/whitfin/cachex
 
 ![CI](https://github.com/cabol/nebulex_adapters_cachex/workflows/CI/badge.svg)
-[![Coverage Status](https://coveralls.io/repos/github/cabol/nebulex_adapters_cachex/badge.svg?branch=main)](https://coveralls.io/github/cabol/nebulex_adapters_cachex?branch=main)
+[![Coverage Status](https://img.shields.io/coveralls/cabol/nebulex_adapters_cachex.svg)](https://coveralls.io/github/cabol/nebulex_adapters_cachex)
 [![Hex Version](https://img.shields.io/hexpm/v/nebulex_adapters_cachex.svg)](https://hex.pm/packages/nebulex_adapters_cachex)
 [![Docs](https://img.shields.io/badge/docs-hexpm-blue.svg)](https://hexdocs.pm/nebulex_adapters_cachex)
-
-This adapter allows to use Cachex (a widely used and powerful cache in Elixir)
-via Nebulex, which means, you can use Nebulex as usual taking advantage of all
-its benefits (like the cache abstraction layer, distributed caching topologies,
-declarative caching annotations, and so on), and at the same time using Cachex
-as cache backend.
 
 See the [online documentation](https://hexdocs.pm/nebulex_adapters_cachex/)
 for more information.
@@ -161,8 +155,8 @@ config :my_app, MyApp.NearCache,
 
 See [Nebulex examples](https://github.com/cabol/nebulex_examples). You will
 find examples for all different topologies, even using other adapters like
-Redis; for all examples you can just replace `Nebulex.Adapters.Local` by
-`Nebulex.Adapters.Cachex`.
+Redis; for all examples you just have to replace `Nebulex.Adapters.Local`
+by `Nebulex.Adapters.Cachex`.
 
 [nbx_redis_adapter]: https://github.com/cabol/nebulex_redis_adapter
 

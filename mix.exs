@@ -1,8 +1,9 @@
 defmodule NebulexAdaptersCachex.MixProject do
   use Mix.Project
 
-  @version "1.0.0-dev"
   @source_url "https://github.com/cabol/nebulex_adapters_cachex"
+  @version "1.0.0-dev"
+  @nbx_vsn "2.0.0-rc.2"
 
   def project do
     [
@@ -28,7 +29,7 @@ defmodule NebulexAdaptersCachex.MixProject do
 
       # Hex
       package: package(),
-      description: "Nebulex adapter for Cachex",
+      description: "A Nebulex adapter for Cachex",
 
       # Docs
       docs: [
@@ -69,16 +70,18 @@ defmodule NebulexAdaptersCachex.MixProject do
 
   defp nebulex_dep do
     if path = System.get_env("NEBULEX_PATH") do
-      {:nebulex, "~> 2.0.0-rc.1", path: path}
+      {:nebulex, "~> #{@nbx_vsn}", path: path}
     else
-      {:nebulex, "~> 2.0.0-rc.1"}
+      # {:nebulex, "~> #{@nbx_vsn}"}
+      {:nebulex, github: "cabol/nebulex"}
     end
   end
 
   defp aliases do
     [
       "nbx.setup": [
-        "cmd git clone --depth 1 --branch master https://github.com/cabol/nebulex.git"
+        "cmd rm -rf nebulex",
+        "cmd git clone --depth 1 --branch master https://github.com/cabol/nebulex"
       ],
       check: [
         "compile --warnings-as-errors",

@@ -141,20 +141,22 @@ defmodule Nebulex.Adapters.Cachex do
 
   # Provide Cache Implementation
   @behaviour Nebulex.Adapter
+  @behaviour Nebulex.Adapter.Entry
   @behaviour Nebulex.Adapter.Queryable
   @behaviour Nebulex.Adapter.Persistence
+  @behaviour Nebulex.Adapter.Stats
 
   # Inherit default transaction implementation
   use Nebulex.Adapter.Transaction
 
   import Nebulex.Helpers
 
-  alias Cachex.Query
+  alias Cachex.{Options, Query}
   alias Nebulex.Entry
 
   @compile {:inline, to_ttl: 1}
 
-  ## Adapter
+  ## Nebulex.Adapter
 
   @impl true
   defmacro __before_compile__(_), do: :ok
@@ -167,13 +169,23 @@ defmodule Nebulex.Adapters.Cachex do
         Cachex
       ])
 
+    stats =
+      if opts[:stats_counter] do
+        true
+      else
+        Options.get(opts, :stats, &is_boolean/1, false)
+      end
+
     child_spec =
       opts
       |> Keyword.put(:name, name)
+      |> Keyword.put(:stats, stats)
       |> Cachex.child_spec()
 
-    {:ok, child_spec, %{name: name}}
+    {:ok, child_spec, %{name: name, stats: stats}}
   end
+
+  ## Nebulex.Adapter.Entry
 
   @impl true
   def get(%{name: name}, key, _opts) do
@@ -278,39 +290,43 @@ defmodule Nebulex.Adapters.Cachex do
   end
 
   @impl true
-  def incr(%{name: name}, key, incr, :infinity, opts) do
-    Cachex.incr!(name, key, incr, initial: opts[:default] || 0)
+  def update_counter(%{name: name}, key, amount, :infinity, default, _opts) do
+    Cachex.incr!(name, key, amount, initial: default)
   end
 
-  def incr(%{name: name}, key, incr, ttl, opts) do
+  def update_counter(%{name: name}, key, incr, ttl, default, _opts) do
     # FIXME: This is a workaround since Cachex does not support `:ttl` here.
     #        Fix it if a better solution comes up.
     Cachex.transaction!(name, [key], fn worker ->
-      counter = Cachex.incr!(worker, key, incr, initial: opts[:default] || 0)
+      counter = Cachex.incr!(worker, key, incr, initial: default)
       if ttl = to_ttl(ttl), do: Cachex.expire!(worker, key, ttl)
       counter
     end)
   end
 
+  ## Nebulex.Adapter.Queryable
+
   @impl true
-  def size(%{name: name}) do
+  def execute(%{name: name}, :count_all, nil, _opts) do
     Cachex.size!(name)
   end
 
-  @impl true
-  def flush(%{name: name}) do
-    size = Cachex.size!(name)
-    true = Cachex.reset!(name)
-    size
+  def execute(%{name: name}, :delete_all, nil, _opts) do
+    Cachex.clear!(name)
   end
 
-  ## Queryable
+  def execute(%{name: name}, :delete_all, :expired, _opts) do
+    Cachex.purge!(name)
+  end
 
-  @impl true
-  def all(adapter_meta, query, opts) do
+  def execute(adapter_meta, :all, query, opts) do
     adapter_meta
     |> stream(query, opts)
     |> Enum.to_list()
+  end
+
+  def execute(_adapter_meta, operation, query, _opts) do
+    raise Nebulex.QueryError, message: "unsupported #{operation}", query: query
   end
 
   @impl true
@@ -344,7 +360,7 @@ defmodule Nebulex.Adapters.Cachex do
 
   defp maybe_return_entry(query, _return), do: query
 
-  ## Persistence
+  ## Nebulex.Adapter.Persistence
 
   @impl true
   def dump(%{name: name}, path, opts) do
@@ -359,6 +375,25 @@ defmodule Nebulex.Adapters.Cachex do
     case Cachex.load(name, path, opts) do
       {:ok, true} -> :ok
       {:error, _} = error -> error
+    end
+  end
+
+  ## Nebulex.Adapter.Stats
+
+  @impl true
+  def stats(%{name: name, stats: stats}) do
+    if stats do
+      # IO.puts "#=> Stats: #{inspect(Cachex.stats(name))}"
+
+      {meta, stats} =
+        name
+        |> Cachex.stats!()
+        |> Map.pop(:meta, %{})
+
+      %Nebulex.Stats{
+        measurements: stats,
+        metadata: meta
+      }
     end
   end
 

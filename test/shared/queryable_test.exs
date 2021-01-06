@@ -6,7 +6,7 @@ defmodule Nebulex.Adapters.Cachex.QueryableTest do
 
     alias Cachex.Query
 
-    describe "all" do
+    describe "all/2" do
       test "returns all keys in cache", %{cache: cache} do
         set1 = cache_put(cache, 1..50)
         set2 = cache_put(cache, 51..100)
@@ -24,7 +24,22 @@ defmodule Nebulex.Adapters.Cachex.QueryableTest do
       end
     end
 
-    describe "stream" do
+    describe "delete_all/2" do
+      test "removes all expired entries", %{cache: cache} do
+        _ = cache_put(cache, 1..5, & &1, ttl: 1500)
+        _ = cache_put(cache, 6..10)
+
+        assert cache.delete_all(:expired) == 0
+        assert cache.count_all() == 10
+
+        :ok = Process.sleep(1600)
+
+        assert cache.delete_all(:expired) == 5
+        assert cache.count_all() == 5
+      end
+    end
+
+    describe "stream/2" do
       @entries for x <- 1..10, into: %{}, do: {x, x * 2}
 
       test "returns all keys in cache", %{cache: cache} do
