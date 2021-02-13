@@ -12,6 +12,8 @@
 See the [online documentation](https://hexdocs.pm/nebulex_adapters_cachex/)
 for more information.
 
+> **NOTE:** This adapter only supports Nebulex v2.0.0 onwards.
+
 ## Installation
 
 Add `:nebulex_adapters_cachex` to your list of dependencies in `mix.exs`:
@@ -19,7 +21,7 @@ Add `:nebulex_adapters_cachex` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:nebulex_adapters_cachex, "~> 1.0"}
+    {:nebulex_adapters_cachex, "~> 2.0"}
   ]
 end
 ```
@@ -104,7 +106,7 @@ end
 ```
 
 > See [Cachex.start_link/1][cachex_start_link] for more information
-  about options.
+  about the options.
 
 [cachex_start_link]: https://hexdocs.pm/cachex/Cachex.html#start_link/1
 

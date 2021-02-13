@@ -2,7 +2,7 @@ defmodule Nebulex.Adapters.Cachex.QueryableTest do
   import Nebulex.CacheCase
 
   deftests do
-    import Nebulex.CacheHelpers
+    import Nebulex.CacheCase
 
     alias Cachex.Query
 

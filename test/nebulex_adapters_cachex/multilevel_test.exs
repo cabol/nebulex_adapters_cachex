@@ -2,16 +2,15 @@ defmodule NebulexAdaptersCachex.MultilevelTest do
   use ExUnit.Case, async: true
   use Nebulex.NodeCase
   use Nebulex.MultilevelTest
-  # use Nebulex.Cache.QueryableTest
-  # use Nebulex.Cache.TransactionTest
+  use Nebulex.Cache.QueryableTest
+  use Nebulex.Cache.TransactionTest
 
   import Nebulex.CacheCase
 
-  alias Nebulex.Time
   alias NebulexAdaptersCachex.TestCache.Multilevel
   alias NebulexAdaptersCachex.TestCache.Multilevel.{L1, L2, L3}
 
-  @gc_interval Time.expiry_time(1, :hour)
+  @gc_interval :timer.hours(1)
 
   @levels [
     {

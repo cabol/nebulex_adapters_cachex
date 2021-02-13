@@ -4,11 +4,8 @@ defmodule Nebulex.Adapters.Cachex do
 
   [Cachex]: http://hexdocs.pm/cachex/Cachex.html
 
-  This adapter allows to use Cachex (a widely used and powerful cache in Elixir)
-  via Nebulex, which means, you can use Nebulex as usual taking advantage of all
-  its benefits (e.g.: cache abstraction layer, distributed caching topologies,
-  declarative caching annotations, and so on), and at the same time using Cachex
-  as cache backend.
+  By means of this adapter, you can configure Cachex as the cache backend
+  and use it through the Nebulex API.
 
   ## Options
 
@@ -129,7 +126,7 @@ defmodule Nebulex.Adapters.Cachex do
 
   > **NOTE:** You could also use [NebulexRedisAdapter][nbx_redis_adapter] for
     L2, it would be matter of changing the adapter for the L2 and the
-    configuration for set up Redis adapter.
+    configuration to set up Redis adapter.
 
   [nbx_redis_adapter]: https://github.com/cabol/nebulex_redis_adapter
 
@@ -383,8 +380,6 @@ defmodule Nebulex.Adapters.Cachex do
   @impl true
   def stats(%{name: name, stats: stats}) do
     if stats do
-      # IO.puts "#=> Stats: #{inspect(Cachex.stats(name))}"
-
       {meta, stats} =
         name
         |> Cachex.stats!()
