@@ -2,7 +2,7 @@ defmodule NebulexAdaptersCachex.MixProject do
   use Mix.Project
 
   @source_url "https://github.com/cabol/nebulex_adapters_cachex"
-  @version "2.0.0-dev"
+  @version "2.0.0"
   @nbx_vsn "2.0.0"
 
   def project do

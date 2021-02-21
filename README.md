@@ -12,7 +12,7 @@
 See the [online documentation](https://hexdocs.pm/nebulex_adapters_cachex/)
 for more information.
 
-> **NOTE:** This adapter only supports Nebulex v2.0.0 onwards.
+**NOTE:** This adapter only supports Nebulex v2.0.0 onwards.
 
 ## Installation
 
