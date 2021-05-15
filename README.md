@@ -21,7 +21,7 @@ Add `:nebulex_adapters_cachex` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:nebulex_adapters_cachex, "~> 2.0"}
+    {:nebulex_adapters_cachex, "~> 2.1"}
   ]
 end
 ```

@@ -1,5 +1,18 @@
 # Changelog
 
+All notable changes to this project will be documented in this file.
+
+This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [v2.1.0](https://github.com/cabol/nebulex_adapters_cachex/tree/v2.1.0) (2021-05-15)
+
+[Full Changelog](https://github.com/cabol/nebulex_adapters_cachex/compare/v2.0.0...v2.1.0)
+
+**Added features:**
+
+- Instrument the adapter with Telemetry events
+  [#6](https://github.com/cabol/nebulex_adapters_cachex/issues/6)
+
 ## [v2.0.0](https://github.com/cabol/nebulex_adapters_cachex/tree/v2.0.0) (2021-02-21)
 
 [Full Changelog](https://github.com/cabol/nebulex_adapters_cachex/compare/099bbcc7446c83f55df04cc77f75f6809c3d579a...v2.0.0)
