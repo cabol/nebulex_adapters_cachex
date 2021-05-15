@@ -87,6 +87,12 @@ defmodule Nebulex.Adapters.Cachex do
 
   > See [Cachex.start_link/1][cachex_start_link] for more information.
 
+  ## Telemetry events
+
+  This adapter emits the recommended Telemetry events.
+  See the "Telemetry events" section in `Nebulex.Cache`
+  for more information.
+
   ## Distributed caching topologies
 
   In the same way we use the distributed adapters and the multilevel one to
@@ -146,6 +152,7 @@ defmodule Nebulex.Adapters.Cachex do
   # Inherit default transaction implementation
   use Nebulex.Adapter.Transaction
 
+  import Nebulex.Adapter
   import Nebulex.Helpers
 
   alias Cachex.{Options, Query}
@@ -166,33 +173,33 @@ defmodule Nebulex.Adapters.Cachex do
         Cachex
       ])
 
-    stats =
-      if opts[:stats_counter] do
-        true
-      else
-        Options.get(opts, :stats, &is_boolean/1, false)
-      end
+    adapter_meta = %{
+      name: name,
+      telemetry: Keyword.fetch!(opts, :telemetry),
+      telemetry_prefix: Keyword.fetch!(opts, :telemetry_prefix),
+      stats: Options.get(opts, :stats, &is_boolean/1, false)
+    }
 
     child_spec =
       opts
       |> Keyword.put(:name, name)
-      |> Keyword.put(:stats, stats)
+      |> Keyword.put(:stats, adapter_meta.stats)
       |> Cachex.child_spec()
 
-    {:ok, child_spec, %{name: name, stats: stats}}
+    {:ok, child_spec, adapter_meta}
   end
 
   ## Nebulex.Adapter.Entry
 
   @impl true
-  def get(%{name: name}, key, _opts) do
-    Cachex.get!(name, key)
+  defspan get(adapter_meta, key, _opts) do
+    Cachex.get!(adapter_meta.name, key)
   end
 
   @impl true
-  def get_all(%{name: name}, keys, _opts) do
+  defspan get_all(adapter_meta, keys, _opts) do
     Enum.reduce(keys, %{}, fn key, acc ->
-      if value = Cachex.get!(name, key) do
+      if value = Cachex.get!(adapter_meta.name, key) do
         Map.put(acc, key, value)
       else
         acc
@@ -201,15 +208,19 @@ defmodule Nebulex.Adapters.Cachex do
   end
 
   @impl true
-  def put(%{name: name}, key, value, ttl, :put, _opts) do
+  defspan put(adapter_meta, key, value, ttl, on_write, _opts) do
+    do_put(adapter_meta.name, key, value, ttl, on_write)
+  end
+
+  defp do_put(name, key, value, ttl, :put) do
     Cachex.put!(name, key, value, ttl: to_ttl(ttl))
   end
 
-  def put(%{name: name}, key, value, ttl, :replace, _opts) do
+  defp do_put(name, key, value, ttl, :replace) do
     Cachex.update!(name, key, value, ttl: to_ttl(ttl))
   end
 
-  def put(%{name: name}, key, value, ttl, :put_new, _opts) do
+  defp do_put(name, key, value, ttl, :put_new) do
     # FIXME: This is a workaround since Cachex does not support a direct action
     #        for put_new. Fix it if a better solution comes up.
     if Cachex.get!(name, key) do
@@ -220,15 +231,19 @@ defmodule Nebulex.Adapters.Cachex do
   end
 
   @impl true
-  def put_all(adapter_meta, entries, ttl, on_write, opts) when is_map(entries) do
-    put_all(adapter_meta, :maps.to_list(entries), ttl, on_write, opts)
+  defspan put_all(adapter_meta, entries, ttl, on_write, _opts) do
+    do_put_all(adapter_meta.name, entries, ttl, on_write)
   end
 
-  def put_all(%{name: name}, entries, ttl, :put, _opts) when is_list(entries) do
+  defp do_put_all(name, entries, ttl, on_write) when is_map(entries) do
+    do_put_all(name, :maps.to_list(entries), ttl, on_write)
+  end
+
+  defp do_put_all(name, entries, ttl, :put) when is_list(entries) do
     Cachex.put_many!(name, entries, ttl: to_ttl(ttl))
   end
 
-  def put_all(%{name: name}, entries, ttl, :put_new, _opts) when is_list(entries) do
+  defp do_put_all(name, entries, ttl, :put_new) when is_list(entries) do
     {keys, _} = Enum.unzip(entries)
 
     # FIXME: This is a workaround since Cachex does not support a direct action
@@ -243,31 +258,31 @@ defmodule Nebulex.Adapters.Cachex do
   end
 
   @impl true
-  def delete(%{name: name}, key, _opts) do
-    true = Cachex.del!(name, key)
+  defspan delete(adapter_meta, key, _opts) do
+    true = Cachex.del!(adapter_meta.name, key)
     :ok
   end
 
   @impl true
-  def take(%{name: name}, key, _opts) do
-    Cachex.take!(name, key)
+  defspan take(adapter_meta, key, _opts) do
+    Cachex.take!(adapter_meta.name, key)
   end
 
   @impl true
-  def has_key?(%{name: name}, key) do
-    {:ok, bool} = Cachex.exists?(name, key)
+  defspan has_key?(adapter_meta, key) do
+    {:ok, bool} = Cachex.exists?(adapter_meta.name, key)
     bool
   end
 
   @impl true
-  def ttl(%{name: name}, key) do
+  defspan ttl(adapter_meta, key) do
     cond do
       # Key does exist and has a TTL associated with it
-      ttl = Cachex.ttl!(name, key) ->
+      ttl = Cachex.ttl!(adapter_meta.name, key) ->
         ttl
 
       # Key does exist and hasn't a TTL associated with it
-      Cachex.get!(name, key) ->
+      Cachex.get!(adapter_meta.name, key) ->
         :infinity
 
       # Key does not exist
@@ -277,21 +292,25 @@ defmodule Nebulex.Adapters.Cachex do
   end
 
   @impl true
-  def expire(%{name: name}, key, ttl) do
-    Cachex.expire!(name, key, to_ttl(ttl))
+  defspan expire(adapter_meta, key, ttl) do
+    Cachex.expire!(adapter_meta.name, key, to_ttl(ttl))
   end
 
   @impl true
-  def touch(%{name: name}, key) do
-    Cachex.touch!(name, key)
+  defspan touch(adapter_meta, key) do
+    Cachex.touch!(adapter_meta.name, key)
   end
 
   @impl true
-  def update_counter(%{name: name}, key, amount, :infinity, default, _opts) do
+  defspan update_counter(adapter_meta, key, amount, ttl, default, _opts) do
+    do_update_counter(adapter_meta.name, key, amount, ttl, default)
+  end
+
+  defp do_update_counter(name, key, amount, :infinity, default) do
     Cachex.incr!(name, key, amount, initial: default)
   end
 
-  def update_counter(%{name: name}, key, incr, ttl, default, _opts) do
+  defp do_update_counter(name, key, incr, ttl, default) do
     # FIXME: This is a workaround since Cachex does not support `:ttl` here.
     #        Fix it if a better solution comes up.
     Cachex.transaction!(name, [key], fn worker ->
@@ -304,34 +323,42 @@ defmodule Nebulex.Adapters.Cachex do
   ## Nebulex.Adapter.Queryable
 
   @impl true
-  def execute(%{name: name}, :count_all, nil, _opts) do
+  defspan execute(adapter_meta, operation, query, _opts) do
+    do_execute(adapter_meta.name, operation, query)
+  end
+
+  defp do_execute(name, :count_all, nil) do
     Cachex.size!(name)
   end
 
-  def execute(%{name: name}, :delete_all, nil, _opts) do
+  defp do_execute(name, :delete_all, nil) do
     Cachex.clear!(name)
   end
 
-  def execute(%{name: name}, :delete_all, :expired, _opts) do
+  defp do_execute(name, :delete_all, :expired) do
     Cachex.purge!(name)
   end
 
-  def execute(adapter_meta, :all, query, opts) do
-    adapter_meta
-    |> stream(query, opts)
+  defp do_execute(name, :all, query) do
+    name
+    |> do_stream(query, [])
     |> Enum.to_list()
   end
 
-  def execute(_adapter_meta, operation, query, _opts) do
+  defp do_execute(_name, operation, query) do
     raise Nebulex.QueryError, message: "unsupported #{operation}", query: query
   end
 
   @impl true
-  def stream(adapter_meta, nil, opts) do
-    stream(adapter_meta, Query.create(true, :key), opts)
+  defspan stream(adapter_meta, query, opts) do
+    do_stream(adapter_meta.name, query, opts)
   end
 
-  def stream(%{name: name}, query, opts) do
+  defp do_stream(name, nil, opts) do
+    do_stream(name, Query.create(true, :key), opts)
+  end
+
+  defp do_stream(name, query, opts) do
     query = maybe_return_entry(query, opts[:return])
     Cachex.stream!(name, query, batch_size: opts[:page_size] || 20)
   rescue
@@ -360,16 +387,16 @@ defmodule Nebulex.Adapters.Cachex do
   ## Nebulex.Adapter.Persistence
 
   @impl true
-  def dump(%{name: name}, path, opts) do
-    case Cachex.dump(name, path, opts) do
+  defspan dump(adapter_meta, path, opts) do
+    case Cachex.dump(adapter_meta.name, path, opts) do
       {:ok, true} -> :ok
       {:error, _} = error -> error
     end
   end
 
   @impl true
-  def load(%{name: name}, path, opts) do
-    case Cachex.load(name, path, opts) do
+  defspan load(adapter_meta, path, opts) do
+    case Cachex.load(adapter_meta.name, path, opts) do
       {:ok, true} -> :ok
       {:error, _} = error -> error
     end
@@ -378,10 +405,10 @@ defmodule Nebulex.Adapters.Cachex do
   ## Nebulex.Adapter.Stats
 
   @impl true
-  def stats(%{name: name, stats: stats}) do
-    if stats do
+  defspan stats(adapter_meta) do
+    if adapter_meta.stats do
       {meta, stats} =
-        name
+        adapter_meta.name
         |> Cachex.stats!()
         |> Map.pop(:meta, %{})
 

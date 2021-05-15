@@ -1,3 +1,6 @@
+# Start Telemetry
+Application.start(:telemetry)
+
 # Set nodes
 nodes = [:"node1@127.0.0.1", :"node2@127.0.0.1", :"node3@127.0.0.1"]
 :ok = Application.put_env(:nebulex_adapters_cachex, :nodes, nodes)
@@ -5,7 +8,7 @@ nodes = [:"node1@127.0.0.1", :"node2@127.0.0.1", :"node3@127.0.0.1"]
 # Nebulex dependency path
 nbx_dep_path = Mix.Project.deps_paths()[:nebulex]
 
-for file <- File.ls!("#{nbx_dep_path}/test/support"), file != "test_cache.ex" do
+for file <- File.ls!("#{nbx_dep_path}/test/support") -- ["test_cache.ex"] do
   Code.require_file("#{nbx_dep_path}/test/support/" <> file, __DIR__)
 end
 
