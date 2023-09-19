@@ -2,8 +2,9 @@ defmodule NebulexAdaptersCachex.MixProject do
   use Mix.Project
 
   @source_url "https://github.com/cabol/nebulex_adapters_cachex"
-  @version "2.1.0"
-  @nbx_vsn "2.1.0"
+  @version "2.1.1"
+  @nbx_tag "2.5.2"
+  @nbx_vsn "2.5"
 
   def project do
     [
@@ -50,28 +51,28 @@ defmodule NebulexAdaptersCachex.MixProject do
   defp deps do
     [
       nebulex_dep(),
-      {:cachex, "~> 3.3"},
-      {:telemetry, "~> 0.4", optional: true},
+      {:cachex, "~> 3.6"},
+      {:telemetry, "~> 0.4 or ~> 1.0", optional: true},
 
       # Test & Code Analysis
-      {:excoveralls, "~> 0.13", only: :test},
-      {:credo, "~> 1.5", only: [:dev, :test], runtime: false},
-      {:dialyxir, "~> 1.0", only: [:dev, :test], runtime: false},
-      {:sobelow, "~> 0.10", only: [:dev, :test], runtime: false},
-      {:stream_data, "~> 0.5", only: [:dev, :test]},
+      {:excoveralls, "~> 0.17", only: :test},
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
+      {:sobelow, "~> 0.13", only: [:dev, :test], runtime: false},
+      {:stream_data, "~> 0.6", only: [:dev, :test]},
 
       # Benchmark Test
-      {:benchee, "~> 1.0", only: :test},
+      {:benchee, "~> 1.1", only: :test},
       {:benchee_html, "~> 1.0", only: :test},
 
       # Docs
-      {:ex_doc, "~> 0.23", only: [:dev, :test], runtime: false}
+      {:ex_doc, "~> 0.30", only: [:dev, :test], runtime: false}
     ]
   end
 
   defp nebulex_dep do
     if path = System.get_env("NEBULEX_PATH") do
-      {:nebulex, "~> #{@nbx_vsn}", path: path}
+      {:nebulex, "~> #{@nbx_tag}", path: path}
     else
       {:nebulex, "~> #{@nbx_vsn}"}
     end
@@ -81,7 +82,7 @@ defmodule NebulexAdaptersCachex.MixProject do
     [
       "nbx.setup": [
         "cmd rm -rf nebulex",
-        "cmd git clone --depth 1 --branch v#{@nbx_vsn} https://github.com/cabol/nebulex"
+        "cmd git clone --depth 1 --branch v#{@nbx_tag} https://github.com/cabol/nebulex"
       ],
       check: [
         "compile --warnings-as-errors",
@@ -110,7 +111,6 @@ defmodule NebulexAdaptersCachex.MixProject do
       flags: [
         :unmatched_returns,
         :error_handling,
-        :race_conditions,
         :no_opaque,
         :unknown,
         :no_return

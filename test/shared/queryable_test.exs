@@ -46,7 +46,7 @@ defmodule Nebulex.Adapters.Cachex.QueryableTest do
         :ok = cache.put_all(@entries)
 
         assert nil
-               |> cache.stream()
+               |> cache.stream(return: :key)
                |> Enum.to_list()
                |> :lists.usort() == Map.keys(@entries)
       end
